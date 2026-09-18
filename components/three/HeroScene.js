@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useMemo } from 'react';
+import React, { Component, useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Float, MeshTransmissionMaterial } from '@react-three/drei';
 import * as THREE from 'three';
@@ -188,6 +188,25 @@ function Scene() {
   );
 }
 
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.warn('WebGL or Canvas failed to initialize:', error);
+  }
+  render() {
+    if (this.state.hasError) {
+      return null;
+    }
+    return this.props.children;
+  }
+}
+
 /* ─── Export: Canvas wrapper ─────────────────────────────────────────────── */
 export default function HeroScene() {
   return (
@@ -199,14 +218,16 @@ export default function HeroScene() {
         pointerEvents: 'none',
       }}
     >
-      <Canvas
-        camera={{ position: [0, 0, 6], fov: 50 }}
-        dpr={[1, 1.5]}
-        gl={{ antialias: true, alpha: true }}
-        style={{ background: 'transparent' }}
-      >
-        <Scene />
-      </Canvas>
+      <ErrorBoundary>
+        <Canvas
+          camera={{ position: [0, 0, 6], fov: 50 }}
+          dpr={[1, 1.5]}
+          gl={{ antialias: true, alpha: true, powerPreference: "default" }}
+          style={{ background: 'transparent' }}
+        >
+          <Scene />
+        </Canvas>
+      </ErrorBoundary>
     </div>
   );
 }

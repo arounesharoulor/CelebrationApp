@@ -162,7 +162,7 @@
 }
 
 /* ================= PAGE 4 ================= */
-.page4 { top: calc(2281 / 1440 * 100cqw); height: calc(758 / 1440 * 100cqw); z-index: 4; overflow: hidden; }
+.page4 { top: calc(2281 / 1440 * 100cqw); height: calc(758 / 1440 * 100cqw); z-index: 4; overflow: visible; }
 .page4Gradient { background: linear-gradient(180deg, rgba(125, 3, 2, 1) 0%, rgba(234, 99, 2, 1) 100%); z-index: 1; }
 .page4Pattern { z-index: 2; opacity: 1; }
 .page4Border { position: absolute; top: -1%; left: 0; width: 100%; z-index: 6; }
@@ -206,8 +206,8 @@
   margin-bottom: 0.5cqw;
 }
 
-.lampLeft { position: absolute; top: 0; left: -2.5%; width: 27.8%; height: calc(389 / 755 * 100%); z-index: 5; display: flex; }
-.lampRight { position: absolute; top: 0; right: -2.5%; width: 27.8%; height: calc(389 / 755 * 100%); z-index: 5; display: flex; }
+.lampLeft { position: absolute; top: -1%; left: 0%; width: 27.8%; height: calc(389 / 755 * 100%); z-index: 5; display: flex; }
+.lampRight { position: absolute; top: -1%; right: 0%; width: 27.8%; height: calc(389 / 755 * 100%); z-index: 5; display: flex; }
 
 .garlandStr {
   width: 16.666%;
@@ -307,6 +307,109 @@
   line-height: 1.18;
 }
 
+/* ================= COUPLE TIMELINE ================= */
+.timelineContainer {
+  position: relative;
+  margin-top: calc(30 / 765 * 100%);
+  display: flex;
+  flex-direction: column;
+  gap: calc(30 / 765 * 100%);
+  width: 100%;
+  padding: 0 calc(40 / 1440 * 100%);
+}
+.timelineLine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  background-color: rgba(123, 44, 44, 0.3);
+  transform: translateX(-50%);
+  z-index: 0;
+}
+.timelineItem {
+  position: relative;
+  width: 45%;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  padding: calc(16 / 765 * 100%) calc(24 / 1440 * 100%);
+  z-index: 1;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+.timelineLeft {
+  align-self: flex-start;
+  text-align: right;
+}
+.timelineRight {
+  align-self: flex-end;
+  text-align: left;
+}
+.timelineDot {
+  position: absolute;
+  top: 20px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #7b2c2c;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 2px rgba(123, 44, 44, 0.2);
+}
+.timelineLeft .timelineDot {
+  right: calc(-10% - 13px); /* position relative to center */
+}
+.timelineRight .timelineDot {
+  left: calc(-10% - 13px);
+}
+.timelineContent {
+  display: flex;
+  flex-direction: column;
+  gap: calc(8 / 765 * 100%);
+}
+.timelineLeft .timelineContent {
+  align-items: flex-end;
+}
+.timelineRight .timelineContent {
+  align-items: flex-start;
+}
+.timelineImageWrapper {
+  width: 100%;
+  height: calc(180 / 765 * 100%);
+  overflow: hidden;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+.timelineImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+.timelineItem:hover .timelineImage {
+  transform: scale(1.05);
+}
+.timelineDate {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: calc(22 / 1440 * 100cqw);
+  color: #7b2c2c;
+  font-style: italic;
+  font-weight: 600;
+}
+.timelineTitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: calc(30 / 1440 * 100cqw);
+  color: #000;
+  margin: 0;
+}
+.timelineDesc {
+  font-family: 'Inter', sans-serif;
+  font-size: calc(16 / 1440 * 100cqw);
+  color: #444;
+  line-height: 1.5;
+  margin: 0;
+}
+
 /* ================= PHOTO GALLERY ================= */
 .photoGallery {
   position: absolute;
@@ -397,6 +500,9 @@
   top: calc(191 / 960 * 100%); left: calc(-3 / 1440 * 100%);
   width: calc(1366 / 1440 * 100%); height: calc(768 / 960 * 100%);
   z-index: 5; pointer-events: none;
+}
+.lotusCenter {
+  display: none;
 }
 
 /* ================= PAGE 6 CONTENT ================= */
@@ -538,6 +644,14 @@
   justify-content: center;
   gap: 2.5cqw;
 }
+
+.countdownContainerBottom {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  z-index: 10;
+  margin-top: 2cqw;
+}
 .thanksTitle {
   font-family: 'Great Vibes', cursive;
   font-size: calc(90 / 1440 * 100cqw);
@@ -620,43 +734,92 @@
    ============================================== */
 @media (max-width: 768px) {
 
-  /* ===== Page Heights & Positions (portrait) ===== */
+  /* Mobile Layout Heights & Positions */
   .page1 { height: calc(852 / 393 * 100cqw); }
-  .page2 { top: calc(852 / 393 * 100cqw); height: calc(852 / 393 * 100cqw); }
-  .page3 { top: calc(1704 / 393 * 100cqw); height: calc(852 / 393 * 100cqw); }
-  .page4 { top: calc(2556 / 393 * 100cqw); height: calc(852 / 393 * 100cqw); }
-  .page5 { top: calc(3408 / 393 * 100cqw); height: calc(852 / 393 * 100cqw); }
+  .page2 { top: calc(700 / 393 * 100cqw); height: calc(502 / 393 * 100cqw); }
+  .page3 { top: calc(1202 / 393 * 100cqw); height: calc(852 / 393 * 100cqw); }
+  .page4 { top: calc(2054 / 393 * 100cqw); height: calc(852 / 393 * 100cqw); }
+  .page5 { top: calc(2906 / 393 * 100cqw); height: calc(852 / 393 * 100cqw); }
   .page7 { height: calc(852 / 393 * 100cqw); }
   /* Pages 6 & 7 top positions are set via JS inline styles */
 
   /* ===== Page 1: Sky + Peacocks + Names ===== */
   .page1Bg {
-    left: -25%;
-    width: 150%;
+    display: block;
+    background-image: url("/assets/einvite-template1/fresh/page1-bg.png");
+    background-size: auto 100%;
+    background-position: center top;
+    background-repeat: no-repeat;
+  }
+  .page1Bg img {
+    display: none;
+  }
+  .mobileArch {
+    display: none; /* No longer needed, handled by page1Bg */
+  }
+  .mobilePeacocksContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: calc(852 / 393 * 100cqw);
+    z-index: 10;
+    pointer-events: none;
+  }
+  .mobilePeacocks {
+    display: block;
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 3;
+  }
+  .mobilePeacocks::before, .mobilePeacocks::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: auto;
+    height: 100%;
+    background-image: url("/assets/einvite-template1/fresh/page1-bg.png");
+    background-size: 180vw 100%;
+    background-repeat: no-repeat;
+  }
+  .mobilePeacocks::before {
+    left: -9%;
+    width: 59%;
+    background-position: left top;
+    -webkit-mask-image: linear-gradient(to right, black 75%, transparent 100%);
+    mask-image: linear-gradient(to right, black 75%, transparent 100%);
+  }
+  .mobilePeacocks::after {
+    right: -9%;
+    width: 59%;
+    background-position: right top;
+    -webkit-mask-image: linear-gradient(to left, black 75%, transparent 100%);
+    mask-image: linear-gradient(to left, black 75%, transparent 100%);
   }
 
   .heroNames {
-    top: calc(25 / 393 * 100cqw);
+    top: calc(50 / 393 * 100cqw);
   }
 
   .groomName, .brideName {
-    font-size: calc(56 / 393 * 100cqw);
+    font-size: calc(42 / 393 * 100cqw);
     line-height: 1.05;
   }
 
   .ampersand {
-    font-size: calc(20 / 393 * 100cqw);
-    margin: 0.8cqw 0;
+    font-size: calc(22 / 393 * 100cqw);
+    margin: 1cqw 0;
   }
 
   .taglineText {
-    font-size: calc(13 / 393 * 100cqw);
-    margin-top: 2cqw;
+    font-size: calc(14 / 393 * 100cqw);
+    margin-top: 1cqw;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.9), 0 0 16px rgba(255, 255, 255, 0.9);
   }
 
   /* ===== Temple Container ===== */
   .templeContainer {
-    width: 98%;
+    width: 143%;
   }
 
   /* ===== Page 2: Temple Courtyard ===== */
@@ -667,16 +830,26 @@
     width: 100%;
     height: 100%;
   }
+  .page2Bg img {
+    object-fit: cover;
+    object-position: bottom center;
+  }
 
   /* ===== Page 3: Red Carpet + Elephants ===== */
   .carpetContainer {
-    left: 3%;
-    width: 94%;
+    left: 0;
+    width: 100%;
   }
-
+  .carpetContainer img {
+    object-fit: fill;
+  }
   .elephantsOverlay {
-    left: -2%;
-    width: 104%;
+    left: 0;
+    width: 100%;
+  }
+  .elephantsOverlay img {
+    object-fit: cover;
+    object-position: bottom;
   }
 
   .headingMaiandra {
@@ -700,10 +873,15 @@
   .page4Content {
     gap: 2cqw;
     padding: 8cqw 5cqw;
+    margin-top: -10cqw;
   }
 
   .page4Name {
-    font-size: calc(52 / 393 * 100cqw);
+    font-size: calc(42 / 393 * 100cqw);
+    text-align: center;
+    max-width: 90%;
+    word-wrap: break-word;
+    line-height: 1.2;
   }
 
   .page4Weds {
@@ -717,22 +895,27 @@
   }
 
   .page4Parents {
-    font-size: calc(17 / 393 * 100cqw);
+    font-size: calc(15 / 393 * 100cqw);
     margin-bottom: 1cqw;
+    text-align: center;
+    max-width: 90%;
+    line-height: 1.4;
   }
 
   .page4Border {
-    top: -0.5%;
+    top: -3%;
   }
 
   .lampLeft {
-    left: -6%;
+    left: 0%;
     width: 34%;
+    top: -17%;
   }
 
   .lampRight {
-    right: -6%;
+    right: 0%;
     width: 34%;
+    top: -17%;
   }
 
   /* ===== Page 5: Gallery ===== */
@@ -766,6 +949,46 @@
     left: -8%;
     width: 116%;
     opacity: 0.35;
+  }
+
+  /* ================= COUPLE TIMELINE ================= */
+  .timelineContainer {
+    margin-top: calc(15 / 844 * 100%);
+    gap: calc(20 / 844 * 100%);
+    padding: 0 calc(20 / 390 * 100%);
+  }
+  .timelineLine {
+    left: calc(20 / 390 * 100% + 8px); /* 20px padding + 8px half dot width */
+  }
+  .timelineItem {
+    width: 100%;
+    align-self: flex-end;
+    text-align: left;
+    margin-left: calc(20 / 390 * 100% + 16px);
+    border-radius: 8px;
+    padding: calc(12 / 844 * 100%) calc(16 / 390 * 100%);
+  }
+  .timelineLeft, .timelineRight {
+    align-self: flex-end;
+    text-align: left;
+  }
+  .timelineLeft .timelineContent, .timelineRight .timelineContent {
+    align-items: flex-start;
+  }
+  .timelineLeft .timelineDot, .timelineRight .timelineDot {
+    left: calc(-20 / 390 * 100% - 16px - 13px); /* Shift dot to align with left line */
+  }
+  .timelineDate {
+    font-size: calc(18 / 390 * 100cqw);
+  }
+  .timelineTitle {
+    font-size: calc(24 / 390 * 100cqw);
+  }
+  .timelineDesc {
+    font-size: calc(14 / 390 * 100cqw);
+  }
+  .timelineImageWrapper {
+    height: calc(140 / 844 * 100%);
   }
 
   .photoGallery {
@@ -810,29 +1033,41 @@
 
   /* ===== Page 6: Save the Date ===== */
   .page6Content {
-    padding: 5cqw 5cqw 0;
+    padding: 12cqw 5cqw 0;
   }
 
   .saveTheDateTitle {
-    font-size: calc(38 / 393 * 100cqw);
-    margin-bottom: 4cqw;
+    font-size: calc(22 / 393 * 100cqw);
+    margin-bottom: 2cqw;
+    text-align: center;
+    max-width: 95%;
+    line-height: 1.2;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
   }
 
   .eventsRow {
-    flex-direction: column;
-    gap: 5cqw;
-    align-items: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 3cqw;
+    align-items: flex-start;
   }
 
   .eventCard6 {
     min-width: unset;
     max-width: unset;
-    width: 88%;
+    width: 46%;
+    margin-bottom: 2cqw;
   }
 
   .eventName6 {
-    font-size: calc(22 / 393 * 100cqw);
-    margin-bottom: 1.2cqw;
+    font-size: calc(18 / 393 * 100cqw);
+    margin-bottom: 1cqw;
+    word-wrap: break-word;
+    line-height: 1.2;
   }
 
   .eventDetail6 {
@@ -840,7 +1075,7 @@
   }
 
   .eventMuhurtham6 {
-    font-size: calc(13 / 393 * 100cqw);
+    font-size: calc(12 / 393 * 100cqw);
   }
 
   .eventVenue6 {
@@ -858,9 +1093,48 @@
     height: 40%;
   }
 
-  .lotusLeft, .lotusRight {
-    width: 130%;
-    left: -15%;
+  .lotusLeft, .lotusRight, .lotusCenter {
+    position: absolute;
+    width: 200%;
+    height: 35%;
+    top: auto;
+    bottom: 0;
+  }
+
+  .lotusLeft {
+    left: -5%;
+    clip-path: polygon(0 0, 30% 0, 30% 100%, 0 100%);
+  }
+
+  .lotusRight {
+    right: -5%;
+    left: auto;
+    clip-path: polygon(70% 0, 100% 0, 100% 100%, 70% 100%);
+  }
+
+  .lotusCenter {
+    display: block;
+    left: -50%;
+    z-index: 6;
+    clip-path: polygon(35% 0, 65% 0, 65% 100%, 35% 100%);
+  }
+
+  .lotusLeft img {
+    object-fit: cover;
+    object-position: left bottom;
+    display: block;
+  }
+
+  .lotusRight img {
+    object-fit: cover;
+    object-position: right bottom;
+    display: block;
+  }
+
+  .lotusCenter img {
+    object-fit: cover;
+    object-position: center bottom;
+    display: block;
   }
 
   .sharedVenue {
@@ -949,4 +1223,43 @@
   .countdownDone {
     font-size: calc(24 / 393 * 100cqw);
   }
+}
+/* Glitter Hover Effect & Tooltip */
+.glitterHover {
+  text-decoration: none;
+  display: block;
+  cursor: pointer;
+  margin-bottom: 8px;
+  position: relative;
+  z-index: 20;
+  transition: all 0.3s ease;
+}
+.glitterHover::after {
+  content: '📍 View on Map';
+  position: absolute;
+  bottom: 80%;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: #fff;
+  color: #d14447;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  white-space: nowrap;
+  z-index: 30;
+}
+.glitterHover:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  bottom: 100%;
+}
+.glitterHover:hover {
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 215, 0, 0.4);
+  transform: scale(1.02);
 }

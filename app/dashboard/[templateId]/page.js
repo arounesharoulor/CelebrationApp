@@ -8,6 +8,16 @@ import styles from './page.module.css';
 import { getTemplateById } from '@/lib/data/templates';
 import { useAuth } from '@/components/providers/AuthProvider';
 import RazorpayCheckout from '@/components/payment/RazorpayCheckout';
+import AddressAutocomplete from '@/components/ui/AddressAutocomplete';
+import TamilInput from '@/components/ui/TamilInput';
+
+import { showToast } from '@/lib/toast';
+import {
+  FiCheck, FiLock, FiClock, FiShield, FiHeart, FiCalendar,
+  FiUser, FiImage, FiGlobe, FiAlertCircle, FiCopy, FiExternalLink,
+  FiPlus, FiTrash2, FiUploadCloud, FiUpload, FiStar, FiCheckCircle, FiInfo,
+  FiArrowRight, FiArrowLeft, FiCreditCard, FiX
+} from 'react-icons/fi';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -32,6 +42,20 @@ const SUGGESTED_EVENTS = {
   'Regal Arch': ['Nikah', 'Walima', 'Reception'],
   'Golden Grandeur': ['Anand Karaj', 'Reception'],
   'Classic Mandapam': ['Nischayam', 'Muhurtham', 'Reception'],
+};
+
+const PREDEFINED_TAGLINES = [
+  "Two souls, one beautiful journey",
+  "Together is a beautiful place to be",
+  "Once in a while, right in the middle of an ordinary life, love gives us a fairy tale",
+  "Cordially Invite You To Join The Occasion"
+];
+
+const TAGLINE_TRANSLATIONS = {
+  "Two souls, one beautiful journey": "இரு மனங்கள், ஒரு அழகிய பயணம்",
+  "Together is a beautiful place to be": "ஒன்றாக இருப்பது ஒரு அழகான இடம்",
+  "Once in a while, right in the middle of an ordinary life, love gives us a fairy tale": "சாதாரண வாழ்க்கையின் நடுவே, காதல் நமக்கு ஒரு தேவதை கதையைத் தருகிறது",
+  "Cordially Invite You To Join The Occasion": "இந்த இனிய திருமண விழாவிற்கு தங்களை அன்புடன் அழைக்கிறோம்"
 };
 
 const FORM_STORAGE_KEY = 'celebrationapp_draft_form';
@@ -72,6 +96,8 @@ export default function DashboardPage() {
     weddingDate: '',
     tagline: '',
     coupleStory: '',
+    coupleTimeline: [],
+    preferredLanguage: 'both',
     galleryImages: [],
     events: [
       { ...defaultEvent, name: 'Wedding Ceremony' },
@@ -110,7 +136,7 @@ export default function DashboardPage() {
     const files = Array.from(e.target.files);
     const remaining = 5 - formData.galleryImages.length;
     if (files.length > remaining) {
-      alert(`You can upload up to ${remaining} more image(s). Max 5 total.`);
+      showToast.warning(`You can upload up to ${remaining} more image(s). Max 5 total.`);
       return;
     }
     setUploading(true);
@@ -118,24 +144,30 @@ export default function DashboardPage() {
       const uploaded = [];
       for (const file of files) {
         if (file.size > 5 * 1024 * 1024) {
-          alert(`${file.name} is too large. Max 5MB per image.`);
+          showToast.error(`${file.name} is too large. Max 5MB per image.`);
           continue;
         }
         if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-          alert(`${file.name} is not a supported format. Use JPEG, PNG, or WebP.`);
+          showToast.error(`${file.name} is not a supported format. Use JPEG, PNG, or WebP.`);
           continue;
         }
         const fd = new FormData();
         fd.append('file', file);
         const res = await fetch('/api/upload', { method: 'POST', body: fd });
         const data = await res.json();
-        if (data.success) uploaded.push(data.url);
-        else alert(`Failed to upload ${file.name}: ${data.error}`);
+        if (data.success) {
+          uploaded.push(data.url);
+        } else {
+          showToast.error(`Failed to upload ${file.name}: ${data.error}`);
+        }
       }
-      setFormData(prev => ({ ...prev, galleryImages: [...prev.galleryImages, ...uploaded] }));
+      if (uploaded.length > 0) {
+        showToast.success(`Uploaded ${uploaded.length} photo(s) successfully.`);
+        setFormData(prev => ({ ...prev, galleryImages: [...prev.galleryImages, ...uploaded] }));
+      }
     } catch (err) {
       console.error(err);
-      alert('Upload failed. Please try again.');
+      showToast.error('Upload failed. Please try again.');
     } finally {
       setUploading(false);
     }
@@ -146,6 +178,44 @@ export default function DashboardPage() {
       ...prev,
       galleryImages: prev.galleryImages.filter((_, i) => i !== index),
     }));
+    showToast.info('Photo removed.');
+  };
+
+  const handleTimelineImageUpload = async (index, e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    if (file.size > 5 * 1024 * 1024) {
+      showToast.error(`${file.name} is too large. Max 5MB per image.`);
+      return;
+    }
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      showToast.error(`${file.name} is not a supported format. Use JPEG, PNG, or WebP.`);
+      return;
+    }
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/api/upload', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (data.success) {
+        showToast.success(`Uploaded photo successfully.`);
+        updateTimelineEvent(index, 'image', data.url);
+      } else {
+        showToast.error(`Failed to upload ${file.name}: ${data.error}`);
+      }
+    } catch (err) {
+      console.error(err);
+      showToast.error('Upload failed. Please try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeTimelineImage = (index) => {
+    updateTimelineEvent(index, 'image', '');
+    showToast.info('Photo removed from timeline.');
   };
 
   if (!template) {
@@ -181,6 +251,37 @@ export default function DashboardPage() {
       ...prev,
       events: prev.events.filter((_, i) => i !== index),
     }));
+  };
+
+  const addTimelineEvent = () => {
+    setFormData((prev) => ({
+      ...prev,
+      coupleTimeline: [...(prev.coupleTimeline || []), { date: '', title: '', description: '' }],
+    }));
+  };
+
+  const updateTimelineEvent = (index, field, value) => {
+    setFormData((prev) => {
+      const timeline = [...(prev.coupleTimeline || [])];
+      timeline[index] = { ...timeline[index], [field]: value };
+      return { ...prev, coupleTimeline: timeline };
+    });
+  };
+
+  const removeTimelineEvent = (index) => {
+    setFormData((prev) => ({
+      ...prev,
+      coupleTimeline: (prev.coupleTimeline || []).filter((_, i) => i !== index),
+    }));
+  };
+
+  const getLabel = (en, ta) => formData.preferredLanguage === 'ta' ? ta : en;
+
+  const validateTamilInput = (str) => {
+    if (formData.preferredLanguage !== 'ta') return true;
+    if (!str) return true;
+    // Check if the string contains any English alphabets
+    return !/[a-zA-Z]/.test(str);
   };
 
   const generateSlug = () => {
@@ -376,16 +477,19 @@ export default function DashboardPage() {
       setSuccess(true);
       setRazorpayOrder(null);
       setPendingPayload(null);
+      showToast.success('Invitation created successfully!');
     } catch (err) {
       console.error(err);
-      alert('Payment verified but invitation creation failed. Please contact support.');
+      showToast.error('Payment verified but invitation creation failed. Please contact support.');
     } finally {
       setLoading(false);
     }
   };
 
   const handlePaymentFailure = (reason) => {
-    setPaymentError(reason || 'Payment was cancelled or failed.');
+    const errorMsg = reason || 'Payment was cancelled or failed.';
+    setPaymentError(errorMsg);
+    showToast.error(errorMsg);
     setRazorpayOrder(null);
     setPendingPayload(null);
   };
@@ -393,6 +497,7 @@ export default function DashboardPage() {
   const copyLink = () => {
     navigator.clipboard.writeText(inviteUrl);
     setCopied(true);
+    showToast.success('Invitation link copied to clipboard!');
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -410,7 +515,9 @@ export default function DashboardPage() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <div className={styles.successIcon}>🎉</div>
+          <div className={styles.successIcon}>
+            <FiStar style={{ fontSize: '3rem', color: 'var(--color-accent)' }} />
+          </div>
           <h2 className={styles.successTitle}>
             Your Invitation is <span className="gradient-text">Ready!</span>
           </h2>
@@ -421,12 +528,12 @@ export default function DashboardPage() {
           <div className={styles.inviteLink}>
             <span className={styles.inviteLinkText}>{inviteUrl}</span>
             <button onClick={copyLink} className={styles.copyBtn}>
-              {copied ? '✓ Copied!' : 'Copy'}
+              {copied ? <><FiCheck /> Copied!</> : <><FiCopy /> Copy</>}
             </button>
           </div>
           <div className={styles.successActions}>
-            <a href={inviteUrl} target="_blank" rel="noopener noreferrer" className="btn-primary">
-              View Invitation →
+            <a href={inviteUrl} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              View Invitation <FiExternalLink />
             </a>
             <Link href="/subscriptions" className="btn-secondary">
               My Subscriptions
@@ -468,7 +575,9 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
-          <div className={styles.authGateIcon}>🔐</div>
+          <div className={styles.authGateIcon}>
+            <FiLock style={{ fontSize: '2.5rem', color: 'var(--color-accent)' }} />
+          </div>
           <h1 className={styles.authGateTitle}>
             Login to <span className="gradient-text">Get Started</span>
           </h1>
@@ -479,21 +588,21 @@ export default function DashboardPage() {
 
           <div className={styles.authGateFeatures}>
             <div className={styles.authGateFeature}>
-              <span className={styles.authGateFeatureIcon}>⏱️</span>
+              <span className={styles.authGateFeatureIcon}><FiClock style={{ color: 'var(--color-accent)' }} /></span>
               <div>
                 <div className={styles.authGateFeatureTitle}>Free Preview</div>
                 <div className={styles.authGateFeatureDesc}>Try it free with a 60-second preview link</div>
               </div>
             </div>
             <div className={styles.authGateFeature}>
-              <span className={styles.authGateFeatureIcon}>💎</span>
+              <span className={styles.authGateFeatureIcon}><FiShield style={{ color: 'var(--color-accent)' }} /></span>
               <div>
                 <div className={styles.authGateFeatureTitle}>Upgrade Anytime</div>
                 <div className={styles.authGateFeatureDesc}>Pay to get a permanent, watermark-free link</div>
               </div>
             </div>
             <div className={styles.authGateFeature}>
-              <span className={styles.authGateFeatureIcon}>💾</span>
+              <span className={styles.authGateFeatureIcon}><FiCheckCircle style={{ color: 'var(--color-accent)' }} /></span>
               <div>
                 <div className={styles.authGateFeatureTitle}>Data Saved</div>
                 <div className={styles.authGateFeatureDesc}>Your details are tied to your account</div>
@@ -505,14 +614,16 @@ export default function DashboardPage() {
             <Link
               href={`/login?redirect=${encodeURIComponent(redirectUrl)}`}
               className={styles.authGatePrimaryBtn}
+              style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
             >
-              Login to Continue ✨
+              Login to Continue <FiStar />
             </Link>
             <Link
               href={`/signup?redirect=${encodeURIComponent(redirectUrl)}`}
               className={styles.authGateSecondaryBtn}
+              style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
             >
-              Create Account →
+              Create Account <FiArrowRight />
             </Link>
           </div>
 
@@ -526,8 +637,9 @@ export default function DashboardPage() {
           <Link
             href={`/login?redirect=${encodeURIComponent(redirectUrl + '?purchased=true')}`}
             className={styles.authGateBuyBtn}
+            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
           >
-            💳 Login & Buy Template
+            <FiCreditCard /> Login &amp; Buy Template
           </Link>
         </motion.div>
       </div>
@@ -544,15 +656,15 @@ export default function DashboardPage() {
             CelebrationApp
           </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <Link href="/subscriptions" style={{ fontSize: '0.85rem', color: '#D28A8C', fontWeight: 600 }} title="My Subscriptions">
-              👤 {user.username}
+            <Link href="/subscriptions" style={{ fontSize: '0.85rem', color: '#D28A8C', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '6px' }} title="My Subscriptions">
+              <FiUser /> {user.username}
             </Link>
           </div>
         </div>
       </nav>
 
-      <Link href="/templates" className={styles.backLink}>
-        ← Back to Templates
+      <Link href="/templates" className={styles.backLink} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+        <FiArrowLeft /> Back to Templates
       </Link>
 
       <motion.div className={styles.header} initial="hidden" animate="visible" variants={fadeUp}>
@@ -565,9 +677,13 @@ export default function DashboardPage() {
         </p>
         {/* Status badges */}
         <div className={styles.statusRow}>
-          <span className={styles.loggedInBadge}>✓ Logged in as {user.username}</span>
+          <span className={styles.loggedInBadge} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <FiCheck /> Logged in as {user.username}
+          </span>
           {prePurchased && (
-            <span className={styles.purchasedBadge}>💎 Template Purchased</span>
+            <span className={styles.purchasedBadge} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <FiShield /> Template Purchased
+            </span>
           )}
         </div>
       </motion.div>
@@ -581,7 +697,7 @@ export default function DashboardPage() {
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <div className={styles.buyUpfrontText}>
-            <span className={styles.buyUpfrontIcon}>💎</span>
+            <span className={styles.buyUpfrontIcon}><FiShield style={{ color: 'var(--color-accent)' }} /></span>
             <div>
               <strong>Want permanent access?</strong> Buy this template now to skip the 60-sec free preview limit.
             </div>
@@ -590,11 +706,14 @@ export default function DashboardPage() {
             className={styles.buyUpfrontBtn}
             onClick={handleBuyUpfront}
             disabled={prePurchasing}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
           >
-            {prePurchasing ? '⏳ Processing...' : '💳 Buy Now'}
+            {prePurchasing ? <><FiClock /> Processing...</> : <><FiCreditCard /> Buy Now</>}
           </button>
           {prePurchaseError && (
-            <div className={styles.buyUpfrontError}>⚠️ {prePurchaseError}</div>
+            <div className={styles.buyUpfrontError} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <FiAlertCircle /> {prePurchaseError}
+            </div>
           )}
         </motion.div>
       )}
@@ -606,7 +725,7 @@ export default function DashboardPage() {
             <div
               className={`${styles.progressDot} ${step === s ? styles.progressDotActive : ''} ${step > s ? styles.progressDotCompleted : ''}`}
             >
-              {step > s ? '✓' : s}
+              {step > s ? <FiCheck /> : s}
             </div>
             {s < totalSteps && (
               <div className={`${styles.progressLine} ${step > s ? styles.progressLineActive : ''}`} />
@@ -625,43 +744,47 @@ export default function DashboardPage() {
                 <p className={styles.formDesc}>Tell us about the beautiful couple.</p>
                 <div className={styles.formGrid}>
                   <div className={styles.formGroup}>
-                    <label className={styles.formLabel}>Groom&apos;s Name *</label>
-                    <input
+                    <label className={styles.formLabel}>{getLabel("Groom's Name", "மணமகன் பெயர்")} <span style={{ color: 'red' }}>*</span></label>
+                    <TamilInput
                       className={styles.formInput}
                       placeholder="e.g. Rahul Sharma"
                       value={formData.groomName}
                       onChange={(e) => updateField('groomName', e.target.value)}
+                      isTamil={formData.preferredLanguage === 'ta'}
                     />
                   </div>
                   <div className={styles.formGroup}>
-                    <label className={styles.formLabel}>Bride&apos;s Name *</label>
-                    <input
+                    <label className={styles.formLabel}>{getLabel("Bride's Name", "மணமகள் பெயர்")} <span style={{ color: 'red' }}>*</span></label>
+                    <TamilInput
                       className={styles.formInput}
                       placeholder="e.g. Priya Patel"
                       value={formData.brideName}
                       onChange={(e) => updateField('brideName', e.target.value)}
+                      isTamil={formData.preferredLanguage === 'ta'}
                     />
                   </div>
                   <div className={styles.formGroup}>
-                    <label className={styles.formLabel}>Groom&apos;s Parents</label>
-                    <input
+                    <label className={styles.formLabel}>{getLabel("Groom's Parents", "மணமகன் பெற்றோர்")}</label>
+                    <TamilInput
                       className={styles.formInput}
                       placeholder="e.g. Mr. & Mrs. Sharma"
                       value={formData.groomParents}
                       onChange={(e) => updateField('groomParents', e.target.value)}
+                      isTamil={formData.preferredLanguage === 'ta'}
                     />
                   </div>
                   <div className={styles.formGroup}>
-                    <label className={styles.formLabel}>Bride&apos;s Parents</label>
-                    <input
+                    <label className={styles.formLabel}>{getLabel("Bride's Parents", "மணமகள் பெற்றோர்")}</label>
+                    <TamilInput
                       className={styles.formInput}
                       placeholder="e.g. Mr. & Mrs. Patel"
                       value={formData.brideParents}
                       onChange={(e) => updateField('brideParents', e.target.value)}
+                      isTamil={formData.preferredLanguage === 'ta'}
                     />
                   </div>
                   <div className={`${styles.formGroup} ${styles.formGridFull}`}>
-                    <label className={styles.formLabel}>Wedding Date *</label>
+                    <label className={styles.formLabel}>{getLabel("Wedding Date", "திருமண தேதி")} <span style={{ color: 'red' }}>*</span></label>
                     <input
                       type="date"
                       className={styles.formInput}
@@ -670,22 +793,119 @@ export default function DashboardPage() {
                     />
                   </div>
                   <div className={`${styles.formGroup} ${styles.formGridFull}`}>
-                    <label className={styles.formLabel}>Tagline</label>
-                    <input
+                    <label className={styles.formLabel}>
+                      <FiGlobe style={{ display: 'inline-block', marginRight: '6px', verticalAlign: 'middle', color: 'var(--color-accent)' }} />
+                      Invitation Language Preference
+                    </label>
+                    <select
                       className={styles.formInput}
-                      placeholder="e.g. Two souls, one beautiful journey"
-                      value={formData.tagline}
-                      onChange={(e) => updateField('tagline', e.target.value)}
-                    />
+                      value={formData.preferredLanguage || 'both'}
+                      onChange={(e) => updateField('preferredLanguage', e.target.value)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <option value="both">Both English &amp; Tamil</option>
+                      <option value="en">English Only</option>
+                      <option value="ta">Tamil Only</option>
+                    </select>
                   </div>
                   <div className={`${styles.formGroup} ${styles.formGridFull}`}>
-                    <label className={styles.formLabel}>Couple&apos;s Story</label>
-                    <textarea
-                      className={`${styles.formInput} ${styles.formTextarea}`}
-                      placeholder="Tell us your love story... (optional)"
-                      value={formData.coupleStory}
-                      onChange={(e) => updateField('coupleStory', e.target.value)}
-                    />
+                    <label className={styles.formLabel}>{getLabel("Tagline", "வார்த்தைகள்")}</label>
+                    <select
+                      className={styles.formInput}
+                      value={PREDEFINED_TAGLINES.includes(formData.tagline) ? formData.tagline : (formData.tagline ? 'Custom' : '')}
+                      onChange={(e) => {
+                        if (e.target.value !== 'Custom') {
+                          updateField('tagline', e.target.value);
+                        } else {
+                          updateField('tagline', ' ');
+                        }
+                      }}
+                    >
+                      <option value="">{getLabel("Select a tagline...", "வார்த்தைகளைத் தேர்ந்தெடுக்கவும்...")}</option>
+                      {PREDEFINED_TAGLINES.map(t => (
+                        <option key={t} value={t}>{getLabel(t, TAGLINE_TRANSLATIONS[t] || t)}</option>
+                      ))}
+                      <option value="Custom">{getLabel("Custom", "தனிப்பயன்")}</option>
+                    </select>
+                    {(!PREDEFINED_TAGLINES.includes(formData.tagline) && formData.tagline !== '') && (
+                      <TamilInput
+                        className={styles.formInput}
+                        style={{ marginTop: '8px' }}
+                        placeholder={getLabel("Type your custom tagline...", "உங்கள் தனிப்பயன் வார்த்தைகளைத் தட்டச்சு செய்க...")}
+                        value={formData.tagline === ' ' ? '' : formData.tagline}
+                        onChange={(e) => updateField('tagline', e.target.value)}
+                        isTamil={formData.preferredLanguage === 'ta'}
+                      />
+                    )}
+                  </div>
+
+                  <div className={`${styles.formGroup} ${styles.formGridFull}`}>
+                    <label className={styles.formLabel}>{getLabel("Couple's Timeline", "காதல் பயணம்")}</label>
+                    {(formData.coupleTimeline || []).map((event, i) => (
+                      <div key={i} className={styles.eventCard} style={{ marginTop: '10px', marginBottom: '10px' }}>
+                        <div className={styles.eventHeader}>
+                          <span className={styles.eventTitle}>{getLabel("Event", "நிகழ்வு")} {i + 1}</span>
+                          <button
+                            className={styles.removeEventBtn}
+                            onClick={() => removeTimelineEvent(i)}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                          >
+                            <FiTrash2 /> {getLabel("Remove", "அகற்று")}
+                          </button>
+                        </div>
+                        <div className={styles.formGrid} style={{ marginTop: '10px' }}>
+                          <div className={styles.formGroup}>
+                            <label className={styles.formLabel}>{getLabel("Date", "தேதி")}</label>
+                            <input className={styles.formInput} type="date" value={event.date} onChange={(e) => updateTimelineEvent(i, 'date', e.target.value)} />
+                          </div>
+                          <div className={styles.formGroup}>
+                            <label className={styles.formLabel}>{getLabel("Title", "தலைப்பு")} <span style={{color: 'red'}}>*</span></label>
+                            <TamilInput className={styles.formInput} placeholder={getLabel("e.g. First Met", "உதாரணமாக: முதல் சந்திப்பு")} value={event.title} onChange={(e) => updateTimelineEvent(i, 'title', e.target.value)} isTamil={formData.preferredLanguage === 'ta'} />
+                          </div>
+                          <div className={`${styles.formGroup} ${styles.formGridFull}`}>
+                            <label className={styles.formLabel}>{getLabel("Description", "விளக்கம்")}</label>
+                            <TamilInput isTextArea className={`${styles.formInput} ${styles.formTextarea}`} value={event.description} onChange={(e) => updateTimelineEvent(i, 'description', e.target.value)} isTamil={formData.preferredLanguage === 'ta'} />
+                          </div>
+                          <div className={`${styles.formGroup} ${styles.formGridFull}`}>
+                            <label className={styles.formLabel}>{getLabel("Photo Memory (Optional)", "புகைப்பட நினைவகம் (விரும்பினால்)")}</label>
+                            {event.image ? (
+                              <div style={{ position: 'relative', width: '150px', height: '150px' }}>
+                                <img src={event.image} alt="Timeline memory" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
+                                <button
+                                  className={styles.removeImageBtn}
+                                  onClick={() => removeTimelineImage(i)}
+                                  style={{ position: 'absolute', top: '5px', right: '5px' }}
+                                >
+                                  <FiX />
+                                </button>
+                              </div>
+                            ) : (
+                              <div className={styles.uploadArea}>
+                                <input
+                                  type="file"
+                                  accept="image/jpeg, image/png, image/webp"
+                                  className={styles.fileInput}
+                                  onChange={(e) => handleTimelineImageUpload(i, e)}
+                                  disabled={uploading}
+                                />
+                                <div className={styles.uploadContent}>
+                                  <FiUpload className={styles.uploadIcon} />
+                                  <p>{getLabel("Click to upload a photo", "புகைப்படம் பதிவேற்ற கிளிக் செய்யவும்")}</p>
+                                  <span className={styles.uploadSub}>Max 5MB (JPEG, PNG, WebP)</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      className={styles.addEventBtn}
+                      onClick={addTimelineEvent}
+                      style={{ marginTop: '10px' }}
+                    >
+                      <FiPlus /> {getLabel("Add Timeline Event", "காதல் பயண நிகழ்வைச் சேர்")}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -693,15 +913,23 @@ export default function DashboardPage() {
                 <span />
                 <button
                   className="btn-primary"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
                   onClick={() => {
                     if (!formData.groomName || !formData.brideName || !formData.weddingDate) {
-                      alert('Please fill in required fields (names and date).');
+                      showToast.warning('Please fill in required fields (names and date).');
                       return;
+                    }
+                    if (formData.preferredLanguage === 'ta') {
+                      const allText = `${formData.groomName} ${formData.brideName} ${formData.groomParents} ${formData.brideParents}`;
+                      if (!validateTamilInput(allText)) {
+                        showToast.warning('Please enter all text in Tamil language only (English letters found).');
+                        return;
+                      }
                     }
                     setStep(2);
                   }}
                 >
-                  Next: Events →
+                  Next: Events <FiArrowRight />
                 </button>
               </div>
             </motion.div>
@@ -724,19 +952,21 @@ export default function DashboardPage() {
                         <button
                           className={styles.removeEventBtn}
                           onClick={() => removeEvent(i)}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                         >
-                          ✕ Remove
+                          <FiTrash2 /> Remove
                         </button>
                       )}
                     </div>
                     <div className={styles.formGrid}>
                       <div className={styles.formGroup}>
                         <label className={styles.formLabel}>Event Name *</label>
-                        <input
+                        <TamilInput
                           className={styles.formInput}
                           placeholder="e.g. Mehendi Ceremony"
                           value={event.name}
                           onChange={(e) => updateEvent(i, 'name', e.target.value)}
+                          isTamil={formData.preferredLanguage === 'ta'}
                         />
                       </div>
                       <div className={styles.formGroup}>
@@ -759,20 +989,32 @@ export default function DashboardPage() {
                       </div>
                       <div className={styles.formGroup}>
                         <label className={styles.formLabel}>Venue *</label>
-                        <input
+                        <TamilInput
                           className={styles.formInput}
                           placeholder="e.g. The Grand Palace"
                           value={event.venue}
                           onChange={(e) => updateEvent(i, 'venue', e.target.value)}
+                          isTamil={formData.preferredLanguage === 'ta'}
                         />
                       </div>
                       <div className={`${styles.formGroup} ${styles.formGridFull}`}>
                         <label className={styles.formLabel}>Venue Address</label>
-                        <input
+                        <AddressAutocomplete
                           className={styles.formInput}
                           placeholder="Full address"
                           value={event.venueAddress}
-                          onChange={(e) => updateEvent(i, 'venueAddress', e.target.value)}
+                          onChange={(val) => {
+                            updateEvent(i, 'venueAddress', val);
+                            if (val && (!event.mapLink || event.mapLink.includes('google.com/maps/search/?api=1&query='))) {
+                              updateEvent(i, 'mapLink', `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(val)}`);
+                            } else if (!val) {
+                              updateEvent(i, 'mapLink', '');
+                            }
+                          }}
+                          onSelect={(address) => {
+                            updateEvent(i, 'venueAddress', address);
+                            updateEvent(i, 'mapLink', `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`);
+                          }}
                         />
                       </div>
                       <div className={`${styles.formGroup} ${styles.formGridFull}`}>
@@ -783,6 +1025,72 @@ export default function DashboardPage() {
                           value={event.mapLink}
                           onChange={(e) => updateEvent(i, 'mapLink', e.target.value)}
                         />
+                      </div>
+                      <div className={`${styles.formGroup} ${styles.formGridFull}`}>
+                        <label className={styles.formLabel}>Alternative Map Image (Optional)</label>
+                        <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '8px' }}>If the venue is not showing on Google Maps, upload a route map image instead.</p>
+                        {event.mapImage ? (
+                          <div style={{ position: 'relative', width: '150px', height: '150px' }}>
+                            <img src={event.mapImage} alt="Map Image" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
+                            <button
+                              className={styles.removeImageBtn}
+                              onClick={() => updateEvent(i, 'mapImage', '')}
+                              style={{ position: 'absolute', top: '5px', right: '5px' }}
+                            >
+                              <FiX />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className={styles.uploadArea}>
+                            <input
+                              type="file"
+                              accept="image/jpeg, image/png, image/webp"
+                              className={styles.fileInput}
+                              onChange={async (e) => {
+                                const file = e.target.files[0];
+                                if (!file) return;
+                                setUploading(true);
+                                try {
+                                  const fd = new FormData();
+                                  fd.append('file', file);
+                                  const res = await fetch('/api/upload', { method: 'POST', body: fd });
+                                  const data = await res.json();
+                                  if (data.success) {
+                                    updateEvent(i, 'mapImage', data.url);
+                                    showToast.success('Map image uploaded successfully.');
+                                  } else {
+                                    showToast.error(`Failed to upload map: ${data.error}`);
+                                  }
+                                } catch (err) {
+                                  showToast.error('Upload failed.');
+                                } finally {
+                                  setUploading(false);
+                                }
+                              }}
+                              disabled={uploading}
+                            />
+                            <div className={styles.uploadContent}>
+                              <FiUpload className={styles.uploadIcon} />
+                              <p>Click to upload map image</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div className={`${styles.formGroup} ${styles.formGridFull}`}>
+                        {(event.venueAddress || event.venue) && (
+                          <div style={{ marginTop: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}>
+                            <div style={{ padding: '8px 12px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Google Map Preview</div>
+                            <iframe 
+                              src={`https://maps.google.com/maps?q=${encodeURIComponent(event.venueAddress || event.venue)}&t=&z=14&ie=UTF8&iwloc=&output=embed`}
+                              width="100%" 
+                              height="200" 
+                              style={{ border: 0, display: 'block' }}
+                              allowFullScreen="" 
+                              loading="lazy" 
+                              referrerPolicy="no-referrer-when-downgrade"
+                            ></iframe>
+                          </div>
+                        )}
                       </div>
                       <div className={styles.formGroup}>
                         <label className={styles.formLabel}>Muhurtham / Auspicious Time</label>
@@ -797,16 +1105,16 @@ export default function DashboardPage() {
                   </div>
                 ))}
 
-                <button className={styles.addEventBtn} onClick={addEvent}>
-                  + Add Another Event
+                <button className={styles.addEventBtn} onClick={addEvent} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <FiPlus /> Add Another Event
                 </button>
               </div>
               <div className={styles.formActions}>
-                <button className="btn-secondary" onClick={() => setStep(1)}>
-                  ← Back
+                <button className="btn-secondary" onClick={() => setStep(1)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <FiArrowLeft /> Back
                 </button>
-                <button className="btn-primary" onClick={() => setStep(3)}>
-                  Next: Photos →
+                <button className="btn-primary" onClick={() => setStep(3)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  Next: Photos <FiArrowRight />
                 </button>
               </div>
             </motion.div>
@@ -822,7 +1130,9 @@ export default function DashboardPage() {
                 </p>
 
                 <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'rgba(212,175,55,0.08)', borderRadius: '12px', border: '1px solid rgba(212,175,55,0.2)' }}>
-                  <div style={{ fontSize: '0.8rem', color: '#D4AF37', fontWeight: 600, marginBottom: '0.5rem' }}>📋 Image Requirements</div>
+                  <div style={{ fontSize: '0.8rem', color: '#D4AF37', fontWeight: 600, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <FiInfo /> Image Requirements
+                  </div>
                   <ul style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', margin: 0, paddingLeft: '1.2rem', lineHeight: 1.8 }}>
                     <li>Format: <strong>JPEG, PNG, or WebP</strong></li>
                     <li>Max size: <strong>5MB</strong> per image</li>
@@ -847,7 +1157,7 @@ export default function DashboardPage() {
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                           }}
                         >
-                          ✕
+                          <FiX />
                         </button>
                         <div style={{ position: 'absolute', bottom: 4, left: 4, fontSize: '0.65rem', color: '#fff', background: 'rgba(0,0,0,0.6)', padding: '2px 6px', borderRadius: '4px' }}>
                           {i + 1}/{formData.galleryImages.length}
@@ -877,7 +1187,7 @@ export default function DashboardPage() {
                     {uploading ? (
                       <><span className={styles.loadingSpinner} /> Uploading...</>
                     ) : (
-                      <>📷 Click to upload photos ({formData.galleryImages.length}/5)</>
+                      <><FiUploadCloud style={{ fontSize: '1.2rem', color: 'var(--color-accent)' }} /> Click to upload photos ({formData.galleryImages.length}/5)</>
                     )}
                   </label>
                 )}
@@ -889,11 +1199,11 @@ export default function DashboardPage() {
                 )}
               </div>
               <div className={styles.formActions}>
-                <button className="btn-secondary" onClick={() => setStep(2)}>
-                  ← Back
+                <button className="btn-secondary" onClick={() => setStep(2)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <FiArrowLeft /> Back
                 </button>
-                <button className="btn-primary" onClick={() => setStep(4)}>
-                  Next: Preview →
+                <button className="btn-primary" onClick={() => setStep(4)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  Next: Preview <FiArrowRight />
                 </button>
               </div>
             </motion.div>
@@ -902,17 +1212,17 @@ export default function DashboardPage() {
           {step === 4 && (
             <motion.div key="step4" variants={fadeUp} initial="hidden" animate="visible" exit="exit">
               <div className={styles.formCard}>
-                <h2 className={styles.formTitle}>Review & Create</h2>
+                <h2 className={styles.formTitle}>Review &amp; Create</h2>
                 <p className={styles.formDesc}>
                   Review your details below. You can always edit later.
                 </p>
 
                 <div style={{ marginBottom: 'var(--space-xl)' }}>
-                  <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.1rem', marginBottom: '0.5rem', color: 'var(--color-accent)' }}>
-                    💍 Couple
+                  <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.1rem', marginBottom: '0.5rem', color: 'var(--color-accent)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <FiHeart /> Couple
                   </h3>
                   <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.95rem' }}>
-                    <strong>{formData.groomName}</strong> & <strong>{formData.brideName}</strong>
+                    <strong>{formData.groomName}</strong> &amp; <strong>{formData.brideName}</strong>
                   </p>
                   {formData.tagline && (
                     <p style={{ color: 'var(--color-text-muted)', fontStyle: 'italic', marginTop: '0.25rem' }}>
@@ -920,13 +1230,16 @@ export default function DashboardPage() {
                     </p>
                   )}
                   <p style={{ color: 'var(--color-text-muted)', marginTop: '0.25rem', fontSize: '0.9rem' }}>
-                    Date: {new Date(formData.weddingDate).toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                    Date: {formData.weddingDate ? new Date(formData.weddingDate).toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : '—'}
+                  </p>
+                  <p style={{ color: 'var(--color-text-muted)', marginTop: '0.25rem', fontSize: '0.85rem' }}>
+                    Language Mode: <strong>{formData.preferredLanguage === 'ta' ? 'Tamil Only' : formData.preferredLanguage === 'en' ? 'English Only' : 'Both English & Tamil'}</strong>
                   </p>
                 </div>
 
                 <div>
-                  <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.1rem', marginBottom: '0.75rem', color: 'var(--color-accent)' }}>
-                    📅 Events ({formData.events.length})
+                  <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.1rem', marginBottom: '0.75rem', color: 'var(--color-accent)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <FiCalendar /> Events ({formData.events.length})
                   </h3>
                   {formData.events.map((event, i) => (
                     <div
@@ -947,8 +1260,8 @@ export default function DashboardPage() {
                 </div>
 
                 <div style={{ marginTop: 'var(--space-xl)' }}>
-                  <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.1rem', marginBottom: '0.5rem', color: 'var(--color-accent)' }}>
-                    📷 Photos ({formData.galleryImages.length})
+                  <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.1rem', marginBottom: '0.5rem', color: 'var(--color-accent)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <FiImage /> Photos ({formData.galleryImages.length})
                   </h3>
                   {formData.galleryImages.length > 0 ? (
                     <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -965,12 +1278,12 @@ export default function DashboardPage() {
               </div>
 
               <div className={styles.formActions}>
-                <button className="btn-secondary" onClick={() => setStep(3)}>
-                  ← Back
+                <button className="btn-secondary" onClick={() => setStep(3)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <FiArrowLeft /> Back
                 </button>
                 {paymentError && (
-                  <div style={{ color: '#ff6b6b', fontSize: '0.85rem', padding: '0.5rem', flex: 1, textAlign: 'center' }}>
-                    ⚠️ {paymentError}
+                  <div style={{ color: '#ff6b6b', fontSize: '0.85rem', padding: '0.5rem', flex: 1, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                    <FiAlertCircle /> {paymentError}
                   </div>
                 )}
                 <div className={styles.step4Actions}>
@@ -979,11 +1292,12 @@ export default function DashboardPage() {
                       className={styles.freePreviewBtn}
                       onClick={handleCreateFreePreview}
                       disabled={loading || paymentProcessing}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                     >
                       {loading ? (
                         <><span className={styles.loadingSpinner} /> Creating...</>
                       ) : (
-                        '⏱️ Create Free Preview (60s)'
+                        <><FiClock /> Create Free Preview (60s)</>
                       )}
                     </button>
                   )}
@@ -991,16 +1305,16 @@ export default function DashboardPage() {
                     className="btn-primary"
                     onClick={handleSubmit}
                     disabled={loading || paymentProcessing}
-                    style={prePurchased ? {} : {}}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                   >
                     {loading || paymentProcessing ? (
                       <>
                         <span className={styles.loadingSpinner} /> {paymentProcessing ? 'Processing Payment...' : 'Processing...'}
                       </>
                     ) : prePurchased ? (
-                      'Create Invitation ✨'
+                      <><FiStar /> Create Invitation</>
                     ) : (
-                      '💳 Create & Pay'
+                      <><FiCreditCard /> Create &amp; Pay</>
                     )}
                   </button>
                 </div>
@@ -1014,10 +1328,10 @@ export default function DashboardPage() {
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.4 }}
                 >
-                  <div className={styles.previewInfoIcon}>💡</div>
+                  <div className={styles.previewInfoIcon}><FiInfo style={{ fontSize: '1.2rem', color: 'var(--color-accent)' }} /></div>
                   <div className={styles.previewInfoText}>
                     <strong>Free Preview</strong> creates a 60-second self-destructing link with a watermark.
-                    Choose <strong>&quot;Create & Pay&quot;</strong> for permanent access with no watermark.
+                    Choose <strong>&quot;Create &amp; Pay&quot;</strong> for permanent access with no watermark.
                   </div>
                 </motion.div>
               )}

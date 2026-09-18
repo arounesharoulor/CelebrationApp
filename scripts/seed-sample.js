@@ -145,12 +145,27 @@ async function seed() {
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
 
+    const tamilSampleData = {
+      ...SAMPLE_DATA,
+      slug: 'sathish-kumar-weds-priya-loganathan-tamil',
+      templateId: 'einvite-1-ta'
+    };
+
+    const resultTa = await Invitation.findOneAndUpdate(
+      { slug: tamilSampleData.slug },
+      tamilSampleData,
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+
     console.log(`✅ Sample invitation seeded:`);
     console.log(`   Slug: ${result.slug}`);
     console.log(`   Template: ${result.templateId}`);
     console.log(`   URL: /invite/${result.slug}`);
-    console.log(`   isSample: ${result.isSample}`);
-    console.log(`   isPaid: ${result.isPaid}`);
+
+    console.log(`✅ Tamil Sample invitation seeded:`);
+    console.log(`   Slug: ${resultTa.slug}`);
+    console.log(`   Template: ${resultTa.templateId}`);
+    console.log(`   URL: /invite/${resultTa.slug}`);
   } catch (err) {
     console.error('❌ Seed failed:', err.message);
     process.exit(1);

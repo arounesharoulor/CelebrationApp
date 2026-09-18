@@ -1,5 +1,6 @@
 import './globals.css';
 import { AuthProvider } from '@/components/providers/AuthProvider';
+import { Toaster } from 'react-hot-toast';
 
 export const viewport = {
   width: 'device-width',
@@ -24,6 +25,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         <AuthProvider>
+          <Toaster position="top-center" />
           {children}
         </AuthProvider>
       </body>
