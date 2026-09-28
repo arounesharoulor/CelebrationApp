@@ -118,7 +118,7 @@ function LanguageSelector({ lang, setLang }) {
 
   return (
     <div style={{ position: 'fixed', top: 20, right: 20, zIndex: 9999 }}>
-      <div 
+      <div
         onClick={() => setIsOpen(!isOpen)}
         style={{
           display: 'flex', alignItems: 'center', gap: '8px',
@@ -129,9 +129,9 @@ function LanguageSelector({ lang, setLang }) {
           cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
         }}
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
         <span style={{ whiteSpace: 'nowrap' }}>{lang === 'en' ? 'English' : 'தமிழ்'}</span>
-        <motion.svg animate={{ rotate: isOpen ? 180 : 0 }} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></motion.svg>
+        <motion.svg animate={{ rotate: isOpen ? 180 : 0 }} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9" /></motion.svg>
       </div>
       <AnimatePresence>
         {isOpen && (
@@ -147,7 +147,7 @@ function LanguageSelector({ lang, setLang }) {
             }}
           >
             {['en', 'ta'].map((l) => (
-              <div 
+              <div
                 key={l}
                 onClick={() => handleSetLang(l)}
                 style={{
@@ -291,7 +291,7 @@ export default function EinviteTemplate1({ invitation = {} }) {
   const PH = isMobile ? 852 : 760;     // per-page reference height
 
   // Page 6 height adapts to event count: compact on mobile, dynamic on desktop
-  const page6Height = isMobile ? 852 : (events.length <= 2 ? 760 : 960);
+  const page6Height = isMobile ? (events.length <= 1 ? 550 : (events.length === 2 ? 750 : 950)) : (events.length <= 2 ? 760 : 960);
   const page6Top = hasPhotos
     ? (isMobile ? 3758 : 3804)
     : (isMobile ? 2906 : 3039);
@@ -355,7 +355,7 @@ export default function EinviteTemplate1({ invitation = {} }) {
         {/* ========== PAGE 1: SKY & NAMES ========== */}
         <div className={`${styles.sectionBlock} ${styles.page1}`}>
           <div className={`${styles.fillBlock} ${styles.skyGradient}`} />
-          
+
           {/* Desktop Background */}
           <div className={styles.page1Bg}>
             <img src="/assets/einvite-template1/fresh/page1-bg.png" alt="Sky bg" className={styles.imgCover} />
@@ -464,7 +464,7 @@ export default function EinviteTemplate1({ invitation = {} }) {
 
           {/* Text Overlay — staggered fade-up on scroll */}
           <div className={styles.page4Content}>
-            {[  
+            {[
               { cls: styles.page4SubText, content: t.sonOf, delay: 0 },
               { cls: styles.page4Parents, content: translateName(groomParents || 'Mr. & Mrs. Jayakumar', lang), delay: 0.1 },
               { cls: styles.page4Name, content: translateName(groomName, lang), delay: 0.2 },
@@ -489,95 +489,95 @@ export default function EinviteTemplate1({ invitation = {} }) {
 
         {/* ========== PAGE 5: INTRODUCING POLAROID (only if photos) ========== */}
         {hasPhotos && (
-        <div className={`${styles.sectionBlock} ${styles.page5}`}>
-          <div className={`${styles.fillBlock} ${styles.page5Gradient}`} />
-          <div className={`${styles.fillBlock} ${styles.page5Pattern}`}>
-            <img src="/assets/einvite-template1/fresh/page5-pattern.png" alt="Page 5 Pattern" className={styles.imgCover} />
-          </div>
+          <div className={`${styles.sectionBlock} ${styles.page5}`}>
+            <div className={`${styles.fillBlock} ${styles.page5Gradient}`} />
+            <div className={`${styles.fillBlock} ${styles.page5Pattern}`}>
+              <img src="/assets/einvite-template1/fresh/page5-pattern.png" alt="Page 5 Pattern" className={styles.imgCover} />
+            </div>
 
-          <div className={styles.polaroidBg}>
-            <img src="/assets/einvite-template1/fresh/page5-polaroid-clean.png" alt="Paper" className={styles.imgContain} />
-          </div>
+            <div className={styles.polaroidBg}>
+              <img src="/assets/einvite-template1/fresh/page5-polaroid-clean.png" alt="Paper" className={styles.imgContain} />
+            </div>
 
-          {/* Text fade up */}
-          <motion.div
-            className={styles.introText}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ margin: '-40px' }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <div className={styles.introTextLine1}><FadeText text={t.introducingLine1} lang={lang} /></div>
-            <div className={styles.introTextLine2}><FadeText text={t.introducingLine2} lang={lang} /></div>
-          </motion.div>
-
-          {/* Rose falls after 15% of section is visible */}
-          <motion.div
-            className={styles.carnations}
-            initial={{ y: -300, opacity: 0, rotate: -5 }}
-            whileInView={{ y: 0, opacity: 1, rotate: 0 }}
-            viewport={{ margin: '0px 0px -85% 0px' }}
-            transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <img src="/assets/einvite-template1/page3/4th-page-flower.png" alt="Rose Carnations" className={styles.imgContain} />
-          </motion.div>
-
-          {/* Photo Gallery */}
-          <div className={styles.photoGallery}>
+            {/* Text fade up */}
             <motion.div
-              className={styles.photoGalleryHeader}
-              initial={{ opacity: 0, y: 16 }}
+              className={styles.introText}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ margin: '-40px' }}
               transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            ><FadeText text={t.whereStoryBegins} lang={lang} /></motion.div>
-            
+            >
+              <div className={styles.introTextLine1}><FadeText text={t.introducingLine1} lang={lang} /></div>
+              <div className={styles.introTextLine2}><FadeText text={t.introducingLine2} lang={lang} /></div>
+            </motion.div>
+
+            {/* Rose falls after 15% of section is visible */}
+            <motion.div
+              className={styles.carnations}
+              initial={{ y: -300, opacity: 0, rotate: -5 }}
+              whileInView={{ y: 0, opacity: 1, rotate: 0 }}
+              viewport={{ margin: '0px 0px -85% 0px' }}
+              transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <img src="/assets/einvite-template1/page3/4th-page-flower.png" alt="Rose Carnations" className={styles.imgContain} />
+            </motion.div>
+
+            {/* Photo Gallery */}
+            <div className={styles.photoGallery}>
+              <motion.div
+                className={styles.photoGalleryHeader}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ margin: '-40px' }}
+                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              ><FadeText text={t.whereStoryBegins} lang={lang} /></motion.div>
 
 
-            {coupleTimeline && coupleTimeline.length > 0 && (
-              <div className={styles.timelineContainer}>
-                <div className={styles.timelineLine}></div>
-                {coupleTimeline.map((event, i) => (
+
+              {coupleTimeline && coupleTimeline.length > 0 && (
+                <div className={styles.timelineContainer}>
+                  <div className={styles.timelineLine}></div>
+                  {coupleTimeline.map((event, i) => (
+                    <motion.div
+                      key={i}
+                      className={`${styles.timelineItem} ${i % 2 === 0 ? styles.timelineLeft : styles.timelineRight}`}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ margin: '-40px' }}
+                      transition={{ duration: 0.6, delay: 0.1 * i }}
+                    >
+                      <div className={styles.timelineDot}></div>
+                      <div className={styles.timelineContent}>
+                        {event.image && (
+                          <div className={styles.timelineImageWrapper}>
+                            <img src={event.image} alt={event.title} className={styles.timelineImage} />
+                          </div>
+                        )}
+                        {event.date && <div className={styles.timelineDate}><FadeText text={translateName(event.date, lang)} lang={lang} /></div>}
+                        <h4 className={styles.timelineTitle}><FadeText text={translateName(event.title, lang)} lang={lang} /></h4>
+                        {event.description && <p className={styles.timelineDesc}><FadeText text={translateName(event.description, lang)} lang={lang} /></p>}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+
+              <div className={`${styles.photoGrid} ${styles[`photoCount${Math.min(galleryImages.length, 5)}`]}`}>
+                {galleryImages.slice(0, 5).map((src, i) => (
                   <motion.div
                     key={i}
-                    className={`${styles.timelineItem} ${i % 2 === 0 ? styles.timelineLeft : styles.timelineRight}`}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ margin: '-40px' }}
-                    transition={{ duration: 0.6, delay: 0.1 * i }}
+                    className={styles.photoBox}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ amount: 0 }}
+                    transition={{ duration: 0.6, delay: 0.2 * i, ease: [0.22, 1, 0.36, 1] }}
                   >
-                    <div className={styles.timelineDot}></div>
-                    <div className={styles.timelineContent}>
-                      {event.image && (
-                        <div className={styles.timelineImageWrapper}>
-                          <img src={event.image} alt={event.title} className={styles.timelineImage} />
-                        </div>
-                      )}
-                      {event.date && <div className={styles.timelineDate}><FadeText text={translateName(event.date, lang)} lang={lang} /></div>}
-                      <h4 className={styles.timelineTitle}><FadeText text={translateName(event.title, lang)} lang={lang} /></h4>
-                      {event.description && <p className={styles.timelineDesc}><FadeText text={translateName(event.description, lang)} lang={lang} /></p>}
-                    </div>
+                    <img src={src} alt={`Gallery ${i + 1}`} />
                   </motion.div>
                 ))}
               </div>
-            )}
-
-            <div className={`${styles.photoGrid} ${styles[`photoCount${Math.min(galleryImages.length, 5)}`]}`}>
-              {galleryImages.slice(0, 5).map((src, i) => (
-                <motion.div
-                  key={i}
-                  className={styles.photoBox}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ amount: 0 }}
-                  transition={{ duration: 0.6, delay: 0.2 * i, ease: [0.22, 1, 0.36, 1] }}
-                >
-                  <img src={src} alt={`Gallery ${i + 1}`} />
-                </motion.div>
-              ))}
             </div>
           </div>
-        </div>
         )}
 
         {/* ========== PAGE 6: SAVE THE DATE ========== */}
@@ -599,7 +599,7 @@ export default function EinviteTemplate1({ invitation = {} }) {
             <img src="/assets/einvite-template1/fresh/page4-flowers-left.svg" alt="Center Arch" className={styles.imgContain} />
           </div>
           <div className={styles.lotusRight}>
-            <img src="/assets/einvite-template1/fresh/page4-flowers-right.svg" alt="Right Lotus Leaves" className={styles.imgContain} />
+            <img src="/assets/einvite-template1/fresh/page4-flowers-left.svg" alt="Right Lotus Leaves" className={styles.imgContain} />
           </div>
 
           {/* Save The Date Content */}
@@ -633,9 +633,9 @@ export default function EinviteTemplate1({ invitation = {} }) {
                     {event.muhurtham && <div className={styles.eventMuhurtham6}><FadeText text={translateName(event.muhurtham, lang)} lang={lang} /></div>}
                     {!sameVenue && event.venue && (
                       <div style={{ marginTop: '10px' }}>
-                        <a 
+                        <a
                           href={event.mapImage || event.mapLink || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.venueAddress || event.venue)}`}
-                          target="_blank" 
+                          target="_blank"
                           rel="noopener noreferrer"
                           className={styles.glitterHover}
                         >
@@ -658,9 +658,9 @@ export default function EinviteTemplate1({ invitation = {} }) {
                 transition={{ duration: 0.8, delay: events.length * 0.15, ease: [0.22, 1, 0.36, 1] }}
               >
                 <div className={styles.sharedVenueLabel}><FadeText text={t.venue} lang={lang} /></div>
-                <a 
+                <a
                   href={events[0]?.mapImage || events[0]?.mapLink || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sharedVenueAddress || sharedVenue)}`}
-                  target="_blank" 
+                  target="_blank"
                   rel="noopener noreferrer"
                   className={styles.glitterHover}
                 >

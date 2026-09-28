@@ -83,25 +83,12 @@ export async function GET(request) {
         return NextResponse.json({ success: true, invitation });
       }
 
-      // ─── UNPAID invitations: track first view and enforce 60s expiry
+      // ─── UNPAID invitations: track first view but DO NOT expire in 60s
       const now = new Date();
 
       if (!invitation.freeViewedAt) {
-        // First time being opened — start the 60s clock
         invitation.freeViewedAt = now;
-        invitation.expiresAt = new Date(now.getTime() + 60 * 1000);
         await invitation.save();
-      } else if (invitation.expiresAt && now > invitation.expiresAt) {
-        // 60 seconds have passed — deactivate link
-        invitation.isActive = false;
-        await invitation.save();
-        return NextResponse.json({
-          success: false,
-          expired: true,
-          invitationId: invitation._id,
-          templateId: invitation.templateId,
-          error: 'Free preview expired. Upgrade to restore access.',
-        }, { status: 410 });
       }
 
       return NextResponse.json({ success: true, invitation });

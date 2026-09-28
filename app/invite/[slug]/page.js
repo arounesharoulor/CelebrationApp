@@ -128,10 +128,7 @@ export default function InvitePage() {
 
   // Sample invitations never expire; unpaid non-sample invitations use the countdown
   const isSample = invitation?.isSample;
-  const secsLeft = useFreeCountdown(
-    invitation && !invitation.isPaid && !isSample ? invitation.expiresAt : null,
-    handleExpire
-  );
+  const [showBanner, setShowBanner] = useState(true);
 
   // ─── Buy Now handler ──────────────────────────────────────────
   const handleBuyNow = async () => {
@@ -233,7 +230,7 @@ export default function InvitePage() {
           <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>⏳</div>
           <h1 className={styles.errorTitle}>Free Preview Expired</h1>
           <p className={styles.errorDesc}>
-            Your 60-second free preview has ended.<br />
+            Your free preview has ended.<br />
             Upgrade to get permanent access with no watermark.
           </p>
 
@@ -336,8 +333,8 @@ export default function InvitePage() {
       <div style={{ position: 'relative' }}>
         <EinviteTemplate1 invitation={invitation} />
         {showWatermark && <Watermark />}
-        {showWatermark && secsLeft !== null && !expired && (
-          <FreePreviewBanner secsLeft={secsLeft} slug={params.slug} user={user} onBuy={handleBuyNow} buying={buying} />
+        {showWatermark && showBanner && !expired && (
+          <FreePreviewBanner slug={params.slug} user={user} onBuy={handleBuyNow} buying={buying} onClose={() => setShowBanner(false)} />
         )}
       </div>
     );
@@ -347,8 +344,8 @@ export default function InvitePage() {
   return (
     <div className={styles.invitePage} style={{ position: 'relative' }}>
       {showWatermark && <Watermark />}
-      {showWatermark && secsLeft !== null && !expired && (
-        <FreePreviewBanner secsLeft={secsLeft} slug={params.slug} user={user} onBuy={handleBuyNow} buying={buying} />
+      {showWatermark && showBanner && !expired && (
+        <FreePreviewBanner slug={params.slug} user={user} onBuy={handleBuyNow} buying={buying} onClose={() => setShowBanner(false)} />
       )}
 
       <MusicPlayer src={null} />
@@ -469,7 +466,7 @@ export default function InvitePage() {
 }
 
 // ─── Free Preview Banner ──────────────────────────────────────────────────────
-function FreePreviewBanner({ secsLeft, slug, user, onBuy, buying }) {
+function FreePreviewBanner({ slug, user, onBuy, buying, onClose }) {
   return (
     <motion.div
       initial={{ y: -80 }}
@@ -493,15 +490,12 @@ function FreePreviewBanner({ secsLeft, slug, user, onBuy, buying }) {
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-        <span style={{ fontSize: '1.2rem' }}>⏱️</span>
+        <span style={{ fontSize: '1.2rem' }}>✨</span>
         <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.88rem', fontFamily: 'Inter, sans-serif' }}>
-          Free preview · expires in{' '}
-          <strong style={{ color: secsLeft <= 10 ? '#ff6b6b' : '#D4AF37', fontSize: '1rem' }}>
-            {secsLeft}s
-          </strong>
+          This is a <strong style={{ color: '#D4AF37' }}>Free Preview</strong>
         </span>
       </div>
-      <div style={{ display: 'flex', gap: '0.5rem' }}>
+      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
         <button
           onClick={onBuy}
           disabled={buying}
@@ -538,6 +532,19 @@ function FreePreviewBanner({ secsLeft, slug, user, onBuy, buying }) {
             Login to Buy ✨
           </Link>
         )}
+        <button
+          onClick={onClose}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: '#fff',
+            cursor: 'pointer',
+            fontSize: '1.2rem',
+            marginLeft: '0.5rem',
+          }}
+        >
+          ×
+        </button>
       </div>
     </motion.div>
   );

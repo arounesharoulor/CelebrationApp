@@ -16,7 +16,7 @@ import {
   FiCheck, FiLock, FiClock, FiShield, FiHeart, FiCalendar,
   FiUser, FiImage, FiGlobe, FiAlertCircle, FiCopy, FiExternalLink,
   FiPlus, FiTrash2, FiUploadCloud, FiUpload, FiStar, FiCheckCircle, FiInfo,
-  FiArrowRight, FiArrowLeft, FiCreditCard, FiX
+  FiArrowRight, FiArrowLeft, FiCreditCard, FiX, FiEye
 } from 'react-icons/fi';
 
 const fadeUp = {
@@ -184,7 +184,7 @@ export default function DashboardPage() {
   const handleTimelineImageUpload = async (index, e) => {
     const file = e.target.files[0];
     if (!file) return;
-    
+
     if (file.size > 5 * 1024 * 1024) {
       showToast.error(`${file.name} is too large. Max 5MB per image.`);
       return;
@@ -591,7 +591,7 @@ export default function DashboardPage() {
               <span className={styles.authGateFeatureIcon}><FiClock style={{ color: 'var(--color-accent)' }} /></span>
               <div>
                 <div className={styles.authGateFeatureTitle}>Free Preview</div>
-                <div className={styles.authGateFeatureDesc}>Try it free with a 60-second preview link</div>
+                <div className={styles.authGateFeatureDesc}>Try it free with a preview link</div>
               </div>
             </div>
             <div className={styles.authGateFeature}>
@@ -840,7 +840,7 @@ export default function DashboardPage() {
                   </div>
 
                   <div className={`${styles.formGroup} ${styles.formGridFull}`}>
-                    <label className={styles.formLabel}>{getLabel("Couple's Timeline", "காதல் பயணம்")}</label>
+                    <label className={styles.formLabel}>{getLabel("Love Journey", "காதல் பயணம்")}</label>
                     {(formData.coupleTimeline || []).map((event, i) => (
                       <div key={i} className={styles.eventCard} style={{ marginTop: '10px', marginBottom: '10px' }}>
                         <div className={styles.eventHeader}>
@@ -859,7 +859,7 @@ export default function DashboardPage() {
                             <input className={styles.formInput} type="date" value={event.date} onChange={(e) => updateTimelineEvent(i, 'date', e.target.value)} />
                           </div>
                           <div className={styles.formGroup}>
-                            <label className={styles.formLabel}>{getLabel("Title", "தலைப்பு")} <span style={{color: 'red'}}>*</span></label>
+                            <label className={styles.formLabel}>{getLabel("Title", "தலைப்பு")} <span style={{ color: 'red' }}>*</span></label>
                             <TamilInput className={styles.formInput} placeholder={getLabel("e.g. First Met", "உதாரணமாக: முதல் சந்திப்பு")} value={event.title} onChange={(e) => updateTimelineEvent(i, 'title', e.target.value)} isTamil={formData.preferredLanguage === 'ta'} />
                           </div>
                           <div className={`${styles.formGroup} ${styles.formGridFull}`}>
@@ -904,7 +904,7 @@ export default function DashboardPage() {
                       onClick={addTimelineEvent}
                       style={{ marginTop: '10px' }}
                     >
-                      <FiPlus /> {getLabel("Add Timeline Event", "காதல் பயண நிகழ்வைச் சேர்")}
+                      <FiPlus /> {getLabel("Add Love Journey Event", "காதல் பயண நிகழ்வைச் சேர்")}
                     </button>
                   </div>
                 </div>
@@ -1080,13 +1080,13 @@ export default function DashboardPage() {
                         {(event.venueAddress || event.venue) && (
                           <div style={{ marginTop: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}>
                             <div style={{ padding: '8px 12px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Google Map Preview</div>
-                            <iframe 
+                            <iframe
                               src={`https://maps.google.com/maps?q=${encodeURIComponent(event.venueAddress || event.venue)}&t=&z=14&ie=UTF8&iwloc=&output=embed`}
-                              width="100%" 
-                              height="200" 
+                              width="100%"
+                              height="200"
                               style={{ border: 0, display: 'block' }}
-                              allowFullScreen="" 
-                              loading="lazy" 
+                              allowFullScreen=""
+                              loading="lazy"
                               referrerPolicy="no-referrer-when-downgrade"
                             ></iframe>
                           </div>
@@ -1266,7 +1266,7 @@ export default function DashboardPage() {
                   {formData.galleryImages.length > 0 ? (
                     <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                       {formData.galleryImages.map((url, i) => (
-                        <img key={i} src={url} alt={`Photo ${i+1}`} style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--color-border)' }} />
+                        <img key={i} src={url} alt={`Photo ${i + 1}`} style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--color-border)' }} />
                       ))}
                     </div>
                   ) : (
@@ -1297,7 +1297,7 @@ export default function DashboardPage() {
                       {loading ? (
                         <><span className={styles.loadingSpinner} /> Creating...</>
                       ) : (
-                        <><FiClock /> Create Free Preview (60s)</>
+                        <><FiEye /> Create Free Preview</>
                       )}
                     </button>
                   )}
@@ -1330,7 +1330,7 @@ export default function DashboardPage() {
                 >
                   <div className={styles.previewInfoIcon}><FiInfo style={{ fontSize: '1.2rem', color: 'var(--color-accent)' }} /></div>
                   <div className={styles.previewInfoText}>
-                    <strong>Free Preview</strong> creates a 60-second self-destructing link with a watermark.
+                    <strong>Free Preview</strong> creates a free preview link with a watermark.
                     Choose <strong>&quot;Create &amp; Pay&quot;</strong> for permanent access with no watermark.
                   </div>
                 </motion.div>

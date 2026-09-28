@@ -577,7 +577,7 @@ export default function EditInvitationPage() {
                     />
                   </div>
                   <div className={`${styles.formGroup} ${styles.formGridFull}`}>
-                    <label className={styles.formLabel}>{getLabel("Couple's Timeline", "காதல் பயணம்")}</label>
+                    <label className={styles.formLabel}>{getLabel("Love Journey", "காதல் பயணம்")}</label>
                     {(formData.coupleTimeline || []).map((event, i) => (
                       <div key={i} className={styles.eventCard} style={{ marginTop: '10px', marginBottom: '10px' }}>
                         <div className={styles.eventHeader}>
@@ -641,7 +641,7 @@ export default function EditInvitationPage() {
                       onClick={addTimelineEvent}
                       style={{ marginTop: '10px' }}
                     >
-                      <FiPlus /> {getLabel("Add Timeline Event", "காதல் பயண நிகழ்வைச் சேர்")}
+                      <FiPlus /> {getLabel("Add Love Journey Event", "காதல் பயண நிகழ்வைச் சேர்")}
                     </button>
                   </div>
                 </div>
