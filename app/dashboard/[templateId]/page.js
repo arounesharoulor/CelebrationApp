@@ -1027,54 +1027,16 @@ export default function DashboardPage() {
                         />
                       </div>
                       <div className={`${styles.formGroup} ${styles.formGridFull}`}>
-                        <label className={styles.formLabel}>Alternative Map Image (Optional)</label>
-                        <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '8px' }}>If the venue is not showing on Google Maps, upload a route map image instead.</p>
-                        {event.mapImage ? (
-                          <div style={{ position: 'relative', width: '150px', height: '150px' }}>
-                            <img src={event.mapImage} alt="Map Image" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
-                            <button
-                              className={styles.removeImageBtn}
-                              onClick={() => updateEvent(i, 'mapImage', '')}
-                              style={{ position: 'absolute', top: '5px', right: '5px' }}
-                            >
-                              <FiX />
-                            </button>
-                          </div>
-                        ) : (
-                          <div className={styles.uploadArea}>
-                            <input
-                              type="file"
-                              accept="image/jpeg, image/png, image/webp"
-                              className={styles.fileInput}
-                              onChange={async (e) => {
-                                const file = e.target.files[0];
-                                if (!file) return;
-                                setUploading(true);
-                                try {
-                                  const fd = new FormData();
-                                  fd.append('file', file);
-                                  const res = await fetch('/api/upload', { method: 'POST', body: fd });
-                                  const data = await res.json();
-                                  if (data.success) {
-                                    updateEvent(i, 'mapImage', data.url);
-                                    showToast.success('Map image uploaded successfully.');
-                                  } else {
-                                    showToast.error(`Failed to upload map: ${data.error}`);
-                                  }
-                                } catch (err) {
-                                  showToast.error('Upload failed.');
-                                } finally {
-                                  setUploading(false);
-                                }
-                              }}
-                              disabled={uploading}
-                            />
-                            <div className={styles.uploadContent}>
-                              <FiUpload className={styles.uploadIcon} />
-                              <p>Click to upload map image</p>
-                            </div>
-                          </div>
-                        )}
+                        <label className={styles.formLabel}>Landmark & Directions</label>
+                        <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '8px' }}>Add helpful landmarks or bus/train routes (e.g., "Opposite to City Hospital, 2 mins from Main Bus Stand").</p>
+                        <textarea
+                          className={styles.formInput}
+                          placeholder="Enter relatable directions here..."
+                          value={event.directions || ''}
+                          onChange={(e) => updateEvent(i, 'directions', e.target.value)}
+                          rows={3}
+                          style={{ resize: 'vertical' }}
+                        />
                       </div>
                       <div className={`${styles.formGroup} ${styles.formGridFull}`}>
                         {(event.venueAddress || event.venue) && (

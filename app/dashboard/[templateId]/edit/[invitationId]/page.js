@@ -731,6 +731,18 @@ export default function EditInvitationPage() {
                           </div>
                         )}
                       </div>
+                      <div className={`${styles.formGroup} ${styles.formGridFull}`}>
+                        <label className={styles.formLabel}>Landmark & Directions</label>
+                        <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '8px' }}>Add helpful landmarks or bus/train routes (e.g., "Opposite to City Hospital, 2 mins from Main Bus Stand").</p>
+                        <textarea
+                          className={styles.formInput}
+                          placeholder="Enter relatable directions here..."
+                          value={event.directions || ''}
+                          onChange={(e) => updateEvent(i, 'directions', e.target.value)}
+                          rows={3}
+                          style={{ resize: 'vertical' }}
+                        />
+                      </div>
                       <div className={styles.formGroup}>
                         <label className={styles.formLabel}>Muhurtham / Auspicious Time</label>
                         <input className={styles.formInput} value={event.muhurtham} onChange={(e) => updateEvent(i, 'muhurtham', e.target.value)} />

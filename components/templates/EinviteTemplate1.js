@@ -634,7 +634,7 @@ export default function EinviteTemplate1({ invitation = {} }) {
                     {!sameVenue && event.venue && (
                       <div style={{ marginTop: '10px' }}>
                         <a
-                          href={event.mapImage || event.mapLink || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.venueAddress || event.venue)}`}
+                          href={event.mapLink || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.venueAddress || event.venue)}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className={styles.glitterHover}
@@ -642,6 +642,11 @@ export default function EinviteTemplate1({ invitation = {} }) {
                           <div className={styles.eventVenue6}><FadeText text={translateName(event.venue, lang)} lang={lang} /></div>
                           {event.venueAddress && <div className={styles.eventVenueAddr6}><FadeText text={translateName(event.venueAddress, lang)} lang={lang} /></div>}
                         </a>
+                        {event.directions && (
+                          <div className={styles.eventDetail6} style={{ marginTop: '8px', fontStyle: 'italic', color: '#ffebcd' }}>
+                            📍 <FadeText text={translateName(event.directions, lang)} lang={lang} />
+                          </div>
+                        )}
                       </div>
                     )}
                   </motion.div>
@@ -659,7 +664,7 @@ export default function EinviteTemplate1({ invitation = {} }) {
               >
                 <div className={styles.sharedVenueLabel}><FadeText text={t.venue} lang={lang} /></div>
                 <a
-                  href={events[0]?.mapImage || events[0]?.mapLink || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sharedVenueAddress || sharedVenue)}`}
+                  href={events[0]?.mapLink || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sharedVenueAddress || sharedVenue)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={styles.glitterHover}
@@ -667,6 +672,11 @@ export default function EinviteTemplate1({ invitation = {} }) {
                   <div className={styles.sharedVenueName}><FadeText text={translateName(sharedVenue, lang)} lang={lang} /></div>
                   {sharedVenueAddress && <div className={styles.sharedVenueAddr}><FadeText text={translateName(sharedVenueAddress, lang)} lang={lang} /></div>}
                 </a>
+                {events[0]?.directions && (
+                  <div className={styles.eventDetail6} style={{ marginTop: '12px', fontStyle: 'italic', color: '#ffebcd' }}>
+                    📍 <FadeText text={translateName(events[0].directions, lang)} lang={lang} />
+                  </div>
+                )}
               </motion.div>
             )}
           </div>
