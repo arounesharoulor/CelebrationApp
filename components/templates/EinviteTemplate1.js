@@ -241,9 +241,13 @@ function getMapLink(mapLink, venue, address) {
   if (mapLink && mapLink.trim() !== '' && !mapLink.match(/^https?:\/\/(www\.)?google\.com\/maps\/?$/) && !mapLink.match(/^https?:\/\/(www\.)?maps\.google\.com\/?$/)) {
     return mapLink;
   }
-  // To ensure Google Maps drops an exact pin rather than showing business suggestions,
-  // we prioritize searching by the exact address only.
-  const searchQuery = address ? address : (venue || '');
+  // To ensure Google Maps drops an exact pin, we search for both the venue name and the exact address.
+  let searchQuery = '';
+  if (venue && address) {
+    searchQuery = `${venue}, ${address}`;
+  } else {
+    searchQuery = address || venue || '';
+  }
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(searchQuery)}`;
 }
 
