@@ -1551,6 +1551,32 @@
     padding: 12cqw 5cqw 0;
   }
 
+  .lotusLeft {
+    transform: scale(1.5);
+    transform-origin: bottom left;
+    clip-path: polygon(0 0, 45% 0, 45% 100%, 0 100%);
+  }
+
+  .lotusRight {
+    transform: scale(1.5);
+    transform-origin: bottom right;
+    clip-path: polygon(55% 0, 100% 0, 100% 100%, 55% 100%);
+  }
+
+  .lotusCenter {
+    display: block !important;
+    position: absolute;
+    bottom: -20cqw; /* Bring image down slightly further */
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 6;
+    pointer-events: none;
+    transform: scale(1.35);
+    transform-origin: bottom center;
+    clip-path: polygon(26% 0, 74% 0, 74% 100%, 26% 100%); /* Adjusted to crop ghost leaf but keep pillars */
+  }
+
   .saveTheDateTitle {
     font-size: calc(22 / 393 * 100cqw);
     margin-bottom: 2cqw;

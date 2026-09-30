@@ -32,7 +32,8 @@ const dict = {
     hours: 'Hours',
     minutes: 'Minutes',
     seconds: 'Seconds',
-    arrived: 'The Big Day Has Arrived! 🎊'
+    arrived: 'The Big Day Has Arrived! 🎊',
+    navigate: 'Navigate to Venue'
   },
   ta: {
     omShree: 'ஓம் ஸ்ரீ கணேசாய நமஹ',
@@ -56,7 +57,8 @@ const dict = {
     hours: 'மணி',
     minutes: 'நிமிடம்',
     seconds: 'வினாடி',
-    arrived: 'திருமண நாள் வந்துவிட்டது! 🎊'
+    arrived: 'திருமண நாள் வந்துவிட்டது! 🎊',
+    navigate: 'இடத்திற்குச் செல்லுங்கள்'
   }
 };
 
@@ -234,6 +236,17 @@ function CountdownTimer({ weddingDate, t }) {
   );
 }
 
+// ─── Map Link Helper ─────────────────────────────────────────────────────────
+function getMapLink(mapLink, venue, address) {
+  if (mapLink && mapLink.trim() !== '' && !mapLink.match(/^https?:\/\/(www\.)?google\.com\/maps\/?$/) && !mapLink.match(/^https?:\/\/(www\.)?maps\.google\.com\/?$/)) {
+    return mapLink;
+  }
+  // To ensure Google Maps drops an exact pin rather than showing business suggestions,
+  // we prioritize searching by the exact address only.
+  const searchQuery = address ? address : (venue || '');
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(searchQuery)}`;
+}
+
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function EinviteTemplate1({ invitation = {} }) {
   const {
@@ -266,6 +279,7 @@ export default function EinviteTemplate1({ invitation = {} }) {
 
   // Mobile detection for responsive layout
   const [isMobile, setIsMobile] = useState(false);
+  const [showMapPopup, setShowMapPopup] = useState(false);
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth <= 768);
     check();
@@ -279,6 +293,10 @@ export default function EinviteTemplate1({ invitation = {} }) {
   const sharedVenue = sameVenue ? events.find(e => e.venue)?.venue : null;
   const sharedVenueAddress = sameVenue ? events.find(e => e.venueAddress)?.venueAddress : null;
 
+  const primaryMapLink = sameVenue
+    ? getMapLink(events[0]?.mapLink, sharedVenue, sharedVenueAddress)
+    : (events[0] ? getMapLink(events[0].mapLink, events[0].venue, events[0].venueAddress) : '#');
+
   // Formatted wedding date for Page 3
   const formattedWeddingDate = weddingDate
     ? new Date(weddingDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -290,8 +308,19 @@ export default function EinviteTemplate1({ invitation = {} }) {
   const PW = isMobile ? 393 : 1440;   // canvas reference width
   const PH = isMobile ? 852 : 760;     // per-page reference height
 
-  // Page 6 height adapts to event count: compact on mobile, dynamic on desktop
-  const page6Height = isMobile ? (events.length <= 1 ? 550 : (events.length === 2 ? 750 : 950)) : (events.length <= 2 ? 760 : 960);
+  // Page 6 height adapts dynamically to event rows and venue block
+  const numRowsMobile = Math.ceil(events.length / 2) || 1;
+  const numRowsDesktop = Math.ceil(events.length / 4) || 1; // Up to 4 events fit in one row on desktop usually, but wrap if too large
+  
+  const mobileHeight = sameVenue 
+    ? 500 + (numRowsMobile * 120) + 160 
+    : 480 + (numRowsMobile * 240);
+    
+  const desktopHeight = sameVenue
+    ? 600 + (numRowsDesktop * 120) + 160
+    : 580 + (numRowsDesktop * 260);
+
+  const page6Height = isMobile ? mobileHeight : desktopHeight;
   const page6Top = hasPhotos
     ? (isMobile ? 3758 : 3804)
     : (isMobile ? 2906 : 3039);
@@ -581,9 +610,12 @@ export default function EinviteTemplate1({ invitation = {} }) {
         )}
 
         {/* ========== PAGE 6: SAVE THE DATE ========== */}
-        <div
+        <motion.div
           className={`${styles.sectionBlock} ${styles.page6}`}
           style={{ top: `calc(${page6Top} / ${PW} * 100cqw)`, height: `calc(${page6Height} / ${PW} * 100cqw)` }}
+          viewport={{ margin: '-30% 0px -30% 0px' }}
+          onViewportEnter={() => isMobile && setShowMapPopup(true)}
+          onViewportLeave={() => isMobile && setShowMapPopup(false)}
         >
           <div className={`${styles.fillBlock} ${styles.page6Gradient}`} />
           <div className={`${styles.fillBlock} ${styles.page6Pattern}`}>
@@ -634,7 +666,7 @@ export default function EinviteTemplate1({ invitation = {} }) {
                     {!sameVenue && event.venue && (
                       <div style={{ marginTop: '10px' }}>
                         <a
-                          href={event.mapLink || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.venueAddress || event.venue)}`}
+                          href={getMapLink(event.mapLink, event.venue, event.venueAddress)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className={styles.glitterHover}
@@ -664,7 +696,7 @@ export default function EinviteTemplate1({ invitation = {} }) {
               >
                 <div className={styles.sharedVenueLabel}><FadeText text={t.venue} lang={lang} /></div>
                 <a
-                  href={events[0]?.mapLink || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sharedVenueAddress || sharedVenue)}`}
+                  href={getMapLink(events[0]?.mapLink, sharedVenue, sharedVenueAddress)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={styles.glitterHover}
@@ -680,7 +712,7 @@ export default function EinviteTemplate1({ invitation = {} }) {
               </motion.div>
             )}
           </div>
-        </div>
+        </motion.div>
 
         {/* ========== PAGE 7: ROUND FRAME, THANK YOU & COUNTDOWN ========== */}
         <div
@@ -748,6 +780,43 @@ export default function EinviteTemplate1({ invitation = {} }) {
         </div>
 
       </div>
+
+      {/* Mobile Map Popup */}
+      <AnimatePresence>
+        {isMobile && showMapPopup && (
+          <motion.a
+            href={primaryMapLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            style={{
+              position: 'fixed',
+              bottom: '24px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 99999,
+              background: '#FFFFFF',
+              color: '#D14447',
+              padding: '14px 28px',
+              borderRadius: '30px',
+              boxShadow: '0 8px 32px rgba(209, 68, 71, 0.4)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              textDecoration: 'none',
+              fontFamily: 'var(--font-inter)',
+              fontWeight: 700,
+              fontSize: '15px',
+              border: '2px solid #D14447'
+            }}
+          >
+            <span style={{ fontSize: '20px' }}>📍</span>
+            {t.navigate}
+          </motion.a>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
